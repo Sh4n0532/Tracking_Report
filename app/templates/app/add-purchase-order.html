@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %} Purchase Order {% endblock title %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="d-inline-block">Create Purchase Order</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group row">
+                <label for="date" class="col-sm-2 col-form-label">Date</label>
+                <div class="col-sm-10">
+                    <input type="date" class="form-control datepicker" id="date" name="date" placeholder="mm/dd/yyyy" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="poNo" class="col-sm-2 col-form-label">Purchase Order No.</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="poNo" name="poNo" placeholder="Purchase Order No.">
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-outline-success"><i class="fa-solid fa-plus"></i> Create</button>
+                <a type="button" href="{% url 'viewQuotation' quotation.id %}" class="btn btn-outline-secondary"><i class="bi bi-x-circle mr-2"></i> Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $('.datepicker').datepicker({ dateFormat: 'yy-mm-dd' }).val();
+</script>
+
+{% endblock content %}

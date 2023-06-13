@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %} Invoice {% endblock title %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="d-inline-block">Edit Invoice</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group row">
+                <label for="date" class="col-sm-2 col-form-label">Date</label>
+                <div class="col-sm-10">
+                    <input type="date" class="form-control datepicker" id="date" name="date" placeholder="mm/dd/yyyy" value="{{ invoice.date|date:'Y-m-d' }}" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="invNo" class="col-sm-2 col-form-label">Invoice Ref.</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="invNo" name="invNo" placeholder="Invoice Ref." value="{{ invoice.invNo }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="description" class="col-sm-2 col-form-label">Description</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="description" name="description" placeholder="Description" value="{{ invoice.description }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="amount" class="col-sm-2 col-form-label">Amount</label>
+                <div class="col-sm-10">
+                    <input type="number" class="form-control" id="amount" name="amount" step="any" placeholder="Amount" value="{{ invoice.amount }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="emailDate" class="col-sm-2 col-form-label">Email Date</label>
+                <div class="col-sm-10">
+                    {% if invoice.emailDate != '' %}
+                        <input type="date" class="form-control datepicker" id="emailDate" name="emailDate" placeholder="mm/dd/yyyy" value="{{ invoice.emailDate|date:'Y-m-d' }}">
+                    {% else %}
+                        <input type="date" class="form-control datepicker" id="emailDate" name="emailDate" placeholder="mm/dd/yyyy">
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-outline-success"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                <a type="button" href="{% url 'viewInvoice' invoice.id %}" class="btn btn-outline-secondary"><i class="bi bi-x-circle mr-2"></i> Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $('.datepicker').datepicker({ dateFormat: 'yy-mm-dd' }).val();
+</script>
+
+{% endblock content %}

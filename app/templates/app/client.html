@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %} Client {% endblock title %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="d-inline-block">Clients</h5>
+        <a href="{% url 'addClient' %}" class="btn btn-sm btn-success float-right d-inline-block"><i class="fa-solid fa-plus"></i> Insert</a>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover text-center">
+            <thead>
+                <tr>
+                    <th scope="col">Client Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone No.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if clients %}
+                    {% for client in clients %}
+                        <tr onclick="location.href='{% url 'viewClient' client.id %}'">
+                            <td>{{ client.clientName }}</td>
+                            <td>{{ client.email }}</td>
+                            <td>{{ client.phoneNo }}</td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="3">No Data</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

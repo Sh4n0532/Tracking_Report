@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %} Project {% endblock title %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="d-inline-block">Edit Project</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group row">
+                <label for="projectName" class="col-sm-2 col-form-label">Project Name</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="projectName" name="projectName" placeholder="Project Name" value="{{ project.projectName }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="client" class="col-sm-2 col-form-label">Client Name</label>
+                <div class="col-sm-10">
+                    <select class="form-control" data-placeholder="Please select" id="clientId" name="clientId" style="width: 100%;">
+                        <option value="">Please Select</option>
+                        {% for client in clients %}
+                            {% if client.id == project.client.id %}
+                                <option selected value="{{ client.id }}">{{ client.clientName }}</option>
+                            {% else %}
+                                <option value="{{ client.id }}">{{ client.clientName }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button type="submit" class="btn btn-outline-success"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+                <a type="button" href="{% url 'viewProject' project.id %}" class="btn btn-outline-secondary"><i class="bi bi-x-circle mr-2"></i> Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

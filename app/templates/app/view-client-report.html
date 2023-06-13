@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %} Client {% endblock title %}
+
+{% block content %}
+
+<style>
+    .footer {
+      display: none; /* Hide the footer by default */
+    }
+
+    .compName {
+        display: none;
+    }
+
+    @media print {
+        .noPrint {
+            visibility: hidden;
+        }
+        .no-page-break {
+            page-break-inside: avoid;
+        }
+
+        .footer {
+            display: block;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: white;
+            color: #888888; 
+            font-size: 10px;
+        }
+
+        .compName {
+            display: block;
+        }
+    }
+
+    #scrollToBottomBtn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background-color: #007bff; /* Set the background color */
+        color: #fff; /* Set the text color */
+        border: none; /* Remove the border */
+        border-radius: 50%; /* Apply rounded corners */
+        width: 50px; /* Set the width */
+        height: 50px; /* Set the height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow */
+    }
+
+    #scrollToBottomBtn i {
+        font-size: 24px; /* Adjust the icon size */
+    }
+</style>
+
+<img src="{% static 'app/logo.jpg' %}" alt="Logo" width="150px" class="mb-3 compName">
+<div class="card">
+    <div class="card-header">
+        <h5 class="d-inline-block">{{ client.clientName }}</h5>
+        <a href="{% url 'viewClient' client.id %}" class="btn btn-sm btn-info float-right d-inline-block noPrint"><i class="bi bi-arrow-left mr-2"></i>Back</a>
+        <button class="btn btn-sm btn-success float-right d-inline-block mr-2 noPrint" onclick="printPage()">Print</button>
+        <button class="btn btn-sm btn-warning float-right d-inline-block mr-2 noPrint text-white" onclick="printSummary()">Print Summary</button>
+    </div>
+    <div class="card-body">
+        <div class="no-page-break" id="summary">
+            <h5>Summary</h5>
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th scope="col">Project Name</th>
+                        <th scope="col">Number of Quotation</th>
+                        <th scope="col">Quotation Amount</th>
+                        <th scope="col">Invoice Amount</th>
+                        <th scope="col">Paid Amount</th>
+                        <th scope="col">Balance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if projects %}
+                        {% for project in projects %}
+                        <tr>
+                            <td>{{ project.projectName }}</td>
+                            <td>{{ project.numOfQuo }}</td>
+                            <td>{{ project.totalQuotation|intcomma }}</td>
+                            <td>{{ project.totalInvoice|intcomma }}</td>
+                            <td>{{ project.totalPaid|intcomma }}</td>
+                            <td>{{ project.totalBalance|intcomma }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+
+        {% if projects %}
+            {% for project in projects %}
+                {% if project.quotation.exists %}
+                <div class="card" id="content">
+                    <div class="card-header">
+                        <h5 style="display: inline;" class="d-inline-block">{{ project.projectName }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for quotation in project.quotation.all|dictsort:'date' %}
+                        <div class="no-page-break">
+                            {% if quotation.printStatus == True %}
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><b>Quotation No.: {{ forloop.counter }}</b></p>
+                                        <p>Quotation Date: {{ quotation.date|date:'d/m/Y' }}</p>
+                                        <p>Quotation Ref.: {{ quotation.quotationNo }}</p>
+                                        <p>Description: {{ quotation.description }}</p>
+                                        <p>Amount: RM{{ quotation.amount|intcomma }}</p>
+                                        <p>Email Date: {{ quotation.emailDate|date:'d/m/Y' }}</p>
+                                    </div>
+
+                                    {% if quotation.purchase.exists %}
+                                    <div class="col-md-4">
+                                        {% for purchase in quotation.purchase.all %}
+                                            {% if purchase.status == True %}
+                                                <p><b>Purchase Order</b></p>
+                                                <p>PO No.: {{ purchase.poNo }}</p>
+                                                <p>PO Date: {{ purchase.date|date:'d/m/Y' }}</p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+
+                                    {% if quotation.delivery.exists %}
+                                    <div class="col-md-4">
+                                        {% for delivery in quotation.delivery.all %}
+                                            {% if delivery.status == True %}
+                                                <p><b>Delivery Order</b></p>
+                                                <p>DO Date: {{ delivery.date|date:'d/m/Y' }}</p>
+                                                <p>DO Ref.: {{ delivery.doNo }}</p>
+                                                <p>Email Date: {{ delivery.emailDate|date:'d/m/Y' }}</p>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <table class="table table-bordered text-center">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Invoice Date</th>
+                                            <th scope="col">Invoice Ref.</th>
+                                            <th scope="col">Description</th>
+                                            <th scope="col">Amount</th>
+                                            <th scope="col">Email Date</th>
+                                            <th scope="col">Paid Amount</th>
+                                            <th scope="col">Payment Date</th>
+                                            <th scope="col">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for invoice in quotation.invoice.all|dictsort:'date' %}
+                                            {% if invoice.payment.exists %}
+                                                {% for payment in invoice.payment.all|dictsort:'date' %}
+                                                    <tr>
+                                                        {% if forloop.first %}
+                                                        <td rowspan="{{ invoice.payment.count }}">{{ invoice.date|date:'d/m/Y' }}</td>
+                                                        <td rowspan="{{ invoice.payment.count }}">{{ invoice.invNo }}</td>
+                                                        <td rowspan="{{ invoice.payment.count }}">{{ invoice.description }}</td>
+                                                        <td rowspan="{{ invoice.payment.count }}">{{ invoice.amount|intcomma }}</td>
+                                                        <td rowspan="{{ invoice.payment.count }}">{{ invoice.emailDate|date:'d/m/Y' }}</td>
+                                                        {% endif %}
+                                                        <td>{{ payment.amount|intcomma }}</td>
+                                                        <td>{{ payment.date|date:'d/m/Y' }}</td>
+                                                        <td>{{ payment.balance|intcomma }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td>{{ invoice.date|date:'d/m/Y' }}</td>
+                                                    <td>{{ invoice.invNo }}</td>
+                                                    <td>{{ invoice.description }}</td>
+                                                    <td>{{ invoice.amount|intcomma }}</td>
+                                                    <td>{{ invoice.emailDate|date:'d/m/Y' }}</td>
+                                                    <td colspan="3">No payment</td>
+                                                </tr>
+                                            {% endif %}
+                                        {% empty %}
+                                            <tr><td colspan="8">No Invoices</td></tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                <br>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<button class="noPrint" id="scrollToBottomBtn" onclick="scrollToBottom()"><i class="fas fa-arrow-down"></i></button>
+
+<div class="footer">
+    <div class="row">
+        <div id="printDate" class="col-md-4"></div>
+        <div class="col-md-4" style="text-align: center;">
+            <p>Senhon Sdn Bhd</p>
+            <p>777, Pintu 10, 05100, Alor Setar, Kedah</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function scrollToBottom() {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    // Print Date
+    var currentDate = new Date();
+
+    var day = currentDate.getDate();
+    var month = currentDate.getMonth() + 1;
+    var year = currentDate.getFullYear();
+    if (day < 10) {
+        day = '0' + day;
+    }
+    if (month < 10) {
+        month = '0' + month;
+    }
+    var formattedDate = day + '/' + month + '/' + year;
+
+    var printDate = document.getElementById("printDate");
+    printDate.innerHTML = "Print Date: " + formattedDate;
+
+    // print summary only
+    function preparePrinting() {
+        // Add event listener to restore the content div after printing
+        window.addEventListener('afterprint', restoreContent);
+    }
+
+    function restoreContent() {
+        // Show the content div after printing
+        var contentDiv = document.getElementById('content');
+        if (contentDiv) {
+            contentDiv.style.display = 'block';
+        }
+
+        // Remove the event listener
+        window.removeEventListener('afterprint', restoreContent);
+    }
+
+    function printPage() {
+        // Open print preview for the entire page
+        window.print();
+
+        // Restore the content div after printing or cancellation
+        restoreContent();
+    }
+
+    function printSummary() {
+        // Hide the content div before printing summary
+        var contentDiv = document.getElementById('content');
+        if (contentDiv) {
+            contentDiv.style.display = 'none';
+        }
+
+        // Open print preview for the summary
+        window.print();
+
+        // Restore the content div after printing or cancellation
+        restoreContent();
+    }
+
+    window.onbeforeprint = preparePrinting;
+
+</script>
+
+{% endblock content %}

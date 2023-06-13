@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %} Home {% endblock title %}
+
+{% block content %}
+<style>
+    /* Custom box styles */
+    .box {
+        border-radius: 5px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .box-title {
+        font-size: 25px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: white;
+
+    }
+
+    .box-content {
+        font-size: 20px;
+        line-height: 1.4;
+        color: white;
+    }
+
+    .box i {
+        font-size: 30px;
+        color: white;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="box bg-info">
+            <i class="fa-solid fa-hammer"></i>
+            <h5 class="box-title">Projects</h5>
+            <p class="box-content">{{ projectCount }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="box bg-warning">
+            <i class="fa-solid fa-file-invoice"></i>
+            <h5 class="box-title">Invoice</h5>
+            <p class="box-content">RM{{ invoiceSum|intcomma }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="box bg-success">
+            <i class="fa-solid fa-wallet"></i>
+            <h5 class="box-title">Paid</h5>
+            <p class="box-content">RM{{ paidSum|intcomma }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="box bg-danger">
+            <i class="fa-solid fa-hourglass-end"></i>
+            <h5 class="box-title">Balance</h5>
+            <p class="box-content">RM{{ balanceSum|intcomma }}</p>
+        </div>
+    </div>
+</div>
+
+<table class="table table-bordered text-center">
+    <thead>
+        <tr>
+            <th scope="col">Client Name</th>
+            <th scope="col">Project Name</th>
+            <th scope="col">Num of Quotation</th>
+            <th scope="col">Total Quotation</th>
+            <th scope="col">Total Invoice</th>
+            <th scope="col">Total Paid</th>
+            <th scope="col">Total Balance</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if clients %}
+            {% for client in clients %}
+                {% if client.projects.exists %}
+                    {% for project in client.projects.all %}
+                        <tr>
+                            {% if forloop.first %}
+                            <td rowspan="{{ client.projects.count }}">{{ client.clientName }}</td>
+                            {% endif %}
+                            <td>{{ project.projectName }}</td>
+                            <td>{{ project.numOfQuo }}</td>
+                            <td>RM{{ project.totalQuotation|intcomma }}</td>
+                            <td>RM{{ project.totalInvoice|intcomma }}</td>
+                            <td>RM{{ project.totalPaid|intcomma }}</td>
+                            <td>RM{{ project.totalBalance|intcomma }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="7">No Data</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+{% endblock content %}
